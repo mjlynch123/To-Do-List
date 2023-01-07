@@ -56,12 +56,30 @@ loadTasks();
 
 
 // SERVER
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-
+const http = require('http');
+const fs = require('fs');
 const WebSocket = require('ws');
 
-const wss = new WebSocket.Server({ port: 80 });
+const server = http.createServer((req, res) => {
+  // Serve the website
+  if (req.url === '/') {
+    fs.readFile('./index.html', (err, data) => {
+      if (err) {
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
+        res.end('Error loading index.html');
+      } else {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(data);
+      }
+    });
+  } else {
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('404 Not Found');
+  }
+});
+
+// Set up a WebSocket server
+const wss = new WebSocket.Server({ server });
 
 wss.on('connection', function connection(ws) {
   ws.on('message', function incoming(message) {
@@ -76,16 +94,6 @@ wss.on('connection', function connection(ws) {
   });
 });
 
-const http = require('http');
+// Listen for incoming connections
+server.listen(80);
 
-const options = {
-  host: 'example.com',
-  port: 80,
-  method: 'GET'
-};
-
-const req = http.request(options, res => {
-  alert(`Port: ${res.socket.localPort}`);
-});
-
-req.end();
