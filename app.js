@@ -53,3 +53,39 @@ function loadTasks() {
 }
 
 loadTasks();
+
+
+// SERVER
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+
+const WebSocket = require('ws');
+
+const wss = new WebSocket.Server({ port: 80 });
+
+wss.on('connection', function connection(ws) {
+  ws.on('message', function incoming(message) {
+    console.log('received: %s', message);
+
+    // Broadcast the message to all connected clients
+    wss.clients.forEach(function each(client) {
+      if (client !== ws && client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    });
+  });
+});
+
+const http = require('http');
+
+const options = {
+  host: 'example.com',
+  port: 80,
+  method: 'GET'
+};
+
+const req = http.request(options, res => {
+  alert(`Port: ${res.socket.localPort}`);
+});
+
+req.end();
