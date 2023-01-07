@@ -56,6 +56,9 @@ loadTasks();
 
 
 // SERVER
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url);
+
 const http = require('http');
 const fs = require('fs');
 const WebSocket = require('ws');
